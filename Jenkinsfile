@@ -33,6 +33,17 @@ pipeline {
                 }
             }
         }
+        stage( 'install dependencies '){
+
+            steps{
+                script{
+                    sh """
+                      npm install
+                    """
+
+                }
+            }
+        }
 
         stage('Test') {
             steps {
@@ -46,8 +57,6 @@ pipeline {
         }
         stage('Deploy') {
           
-           
-            
             steps {
                 script{
                 sh """
