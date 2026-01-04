@@ -18,16 +18,19 @@ pipeline {
                 
                 sh """
                 echo "building"
-                sh """
+                 """
                 }
             }
         }
         
       stage('Read Version') {
+
             steps {
+                script {
              def packageJSON = readJSON file: 'package.json'  // your package.json content will be stored here defining and storing the package.json file
-                appVersion = packageJSON.Version // accesesing the version of the catalogue(app)
+                appVersion = packageJSON.version // accesesing the version of the catalogue(app)
                 echo "app version: ${appVersion}" //printing the version
+                }
             }
         }
 
@@ -37,7 +40,7 @@ pipeline {
                 sh """
                 
                 echo "Testing"
-                sh """
+                 """
                 }
             }
         }
@@ -49,14 +52,16 @@ pipeline {
                 script{
                 sh """
                 echo "Deploye"
-                sh """
+                 """
                 }
             }
     
         }
     }
+    post {
      success {
             echo "hello i will run when pipeline success"
         }
+    }
     
     }
