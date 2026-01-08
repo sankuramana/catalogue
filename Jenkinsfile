@@ -7,6 +7,9 @@ pipeline {
     environment {
          COURCE ="jenkins"
          appVersion = ""
+          ACC_ID = "375553085606"
+         PROJECT = "roboshop"
+         COMPONENT = "catalogue"
 
     }
      
@@ -45,6 +48,7 @@ pipeline {
             }
         }
 
+
         stage('Test') {
             steps {
                 script{
@@ -55,17 +59,18 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-          
+         stage('Build Image') {
             steps {
                 script{
-                sh """
-                echo "Deploye"
-                 """
+                    withAWS(region:'us-east-1',credentials:'aws-creds') {
+                        sh """
+
+                        """
+                    }
                 }
             }
-    
         }
+       
     }
     post {
      success {
