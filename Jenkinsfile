@@ -1,96 +1,86 @@
 pipeline {
     agent {
-        node{
+        node {
             label 'AGENT-1'
         }
     }
-    environment {
-         COURCE ="jenkins"
-         appVersion = ""
-          ACC_ID = "060002399633"
-         PROJECT = "roboshop"
-         COMPONENT = "catalogue"
 
+    environment {
+        COURSE     = "jenkins"
+        ACC_ID     = "060002399633"
+        PROJECT    = "roboshop"
+        COMPONENT  = "catalogue"
+        AWS_REGION = "us-east-1"
     }
-     
+
     stages {
+
         stage('Build') {
             steps {
-                script{
-
-                
-                sh """
-                echo "building"
-                 """
-                }
+                sh 'echo "building"'
             }
         }
-        
-      stage('Read Version') {
 
+        stage('Read Version') {
             steps {
                 script {
-             def packageJSON = readJSON file: 'package.json'  // your package.json content will be stored here defining and storing the package.json file
-                appVersion = packageJSON.version // accesesing the version of the catalogue(app)
-                echo "app version: ${appVersion}" //printing the version
-                }
-            }
-        }
-        stage( 'install dependencies '){
-
-            steps{
-                script{
-                    sh """
-                      npm install
-                    """
-
+                    def packageJSON = readJSON file: 'package.json'
+                    env.APP_VERSION = packageJSON.version   // ✅ IMPORTANT
+                    echo "App version: ${env.APP_VERSION}"
                 }
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
 
         stage('Test') {
             steps {
-                script{
-                sh """
-                
-                echo "Testing"
-                 """
+                sh 'echo "Testing"'
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                withAWS(region: "${AWS_REGION}", credentials: 'aws-creds') {
+                    sh """
+                        set -e
+
+                        aws sts get-caller-identity
+
+                        aws ecr describe-repositories \
+                          --repository-names ${PROJECT}/${COMPONENT} \
+                          --region ${AWS_REGION} || \
+                        aws ecr create-repository \
+                          --repository-name ${PROJECT}/${COMPONENT} \
+                          --region ${AWS_REGION}
+
+                        aws ecr get-login-password --region ${AWS_REGION} | \
+                        docker login --username AWS --password-stdin \
+                        ${ACC_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+                        docker build -t \
+                        ${ACC_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION} .
+
+                        docker images
+
+                        docker push \
+                        ${ACC_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION}
+                    """
                 }
             }
         }
-        stage('Build & Push Docker Image') {
-    steps {
-        script {
-            withAWS(region:'us-east-1',credentials:'aws-creds') {
-                sh """
-                    # Ensure repo exists
-                    aws ecr describe-repositories --repository-names ${PROJECT}/${COMPONENT} || \
-                    aws ecr create-repository --repository-name ${PROJECT}/${COMPONENT}
+    }
 
-                    # Login to ECR
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-
-                    # Build Docker image
-                     docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-
-                    # Verify image
-                     docker images
-
-                    # Push to ECR
-                     docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                """
-            }
+    post {
+        success {
+            echo "Pipeline completed successfully 🎉"
+        }
+        failure {
+            echo "Pipeline failed ❌"
         }
     }
 }
-
-       
-    }
-    post {
-     success {
-            echo "hello i will run when pipeline success"
-        }
-    }
-    
-    }
