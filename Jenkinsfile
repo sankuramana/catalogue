@@ -59,20 +59,32 @@ pipeline {
                 }
             }
         }
-         stage('Build Image') {
-            steps {
-                script{
-                    withAWS(region:'us-east-1',credentials:'aws-creds') {
-                        sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-                           sudo docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
-                             sudo docker images
-                             sudo docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
-                        """
-                    }
-                }
+        stage('Build & Push Docker Image') {
+    steps {
+        script {
+            withAWS(region:'us-east-1',credentials:'aws-creds') {
+                sh """
+                    # Ensure repo exists
+                    aws ecr describe-repositories --repository-names ${PROJECT}/${COMPONENT} || \
+                    aws ecr create-repository --repository-name ${PROJECT}/${COMPONENT}
+
+                    # Login to ECR
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+
+                    # Build Docker image
+                    sudo docker build -t ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion} .
+
+                    # Verify image
+                    sudo docker images
+
+                    # Push to ECR
+                    sudo docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${appVersion}
+                """
             }
         }
+    }
+}
+
        
     }
     post {
