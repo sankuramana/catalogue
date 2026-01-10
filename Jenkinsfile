@@ -37,9 +37,11 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Unit testing') {
             steps {
-                sh 'echo "Testing"'
+                sh """
+                npm test
+                """
             }
         }
 
