@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         COURSE     = "jenkins"
-        ACC_ID     = "6968-7427-3514"
+        ACC_ID     = "696874273514"
         PROJECT    = "roboshop"
         COMPONENT  = "catalogue"
         AWS_REGION = "us-east-1"
