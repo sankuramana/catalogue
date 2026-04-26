@@ -1,10 +1,12 @@
 name: feature-pipeline
-
-on:
-  push:
-
-jobs:
+on: [push]
+permissions:
+  contents: read
+  statuses: write
+  security-events: read
+jobs: 
   feature-pipeline:
+    # uses: daws-86s/workflows/.github/workflows/feature-nodejs-pipeline.yaml@main
     uses: RamanaDevOps-25/workflows/.github/workflows/feature-nodejs-pipeline.yml@main
     with:
       project: roboshop
