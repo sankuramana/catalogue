@@ -5,7 +5,7 @@ on:
 
 jobs:
   feature-pipeline:
-    uses: RamanaDevOps-25/workflows/.github/workflows/feature-nodejs-pipeline.yaml@main
+    uses: RamanaDevOps-25/workflows/.github/workflows/feature-nodejs-pipeline.yml@main
     with:
       project: roboshop
       component: catalogue
