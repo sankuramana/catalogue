@@ -1,22 +1,13 @@
 name: feature-pipeline
 
-on: [push]
-
-# permissions:
-#   contents: read
-#   statuses: write
-#   security-events: read
+on:
+  push:
 
 jobs:
   feature-pipeline:
-    # if: github.ref != 'refs/heads/main'
-    # uses: daws-86s/workflows/.github/workflows/feature-nodejs-pipeline.yaml@main
-
     uses: RamanaDevOps-25/workflows/.github/workflows/feature-nodejs-pipeline.yaml@main
-
     with:
       project: roboshop
       component: catalogue
       environment: dev
-
     secrets: inherit
